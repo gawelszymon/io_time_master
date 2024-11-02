@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Pracownika - TimeMasters</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body class="bg-light d-flex justify-content-center align-items-center vh-100">
+
+    <div class="custom-container bg-white shadow p-5 rounded-3" style="max-width: 500px;">
+        <h2 class="text-center fw-bold mb-4">Panel Pracownika</h2>
+        
+        <!-- Przycisk START, STOP, END i RESET -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <button class="btn btn-success custom-btn" onclick="startTimer()">START</button>
+            <button class="btn btn-warning custom-btn" onclick="stopTimer()">STOP</button>
+            <button class="btn btn-danger custom-btn" onclick="endTimer()">END</button>
+            <button class="btn btn-secondary custom-btn" onclick="resetTimer()">RESET</button>
+        </div>
+
+        <!-- Wyświetlanie czasu -->
+        <div class="timer text-center fs-2 fw-bold mb-4" id="timer">00:00:00</div>
+
+        <!-- Wyświetlanie godzin rozpoczęcia i zakończenia pracy -->
+        <div class="text-center mb-4">
+            <p id="startTimeDisplay">Godzina rozpoczęcia: --:--:--</p>
+            <p id="endTimeDisplay">Godzina zakończenia: --:--:--</p>
+        </div>
+
+        <!-- Sekcja z obrazem z kamery -->
+        <div class="camera-container mb-4">
+            <video id="camera" autoplay playsinline style="width: 100%; border-radius: 8px;"></video>
+        </div>
+
+        <button class="btn btn-dark btn-lg w-100 fw-bold custom-btn" onclick="sendData()">WYŚLIJ</button>
+    </div>
+
+    <!-- Bootstrap JS (opcjonalne) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Dołączenie pliku user.js -->
+    <script src="../static/user.js"></script>
+</body>
+</html>
