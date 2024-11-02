@@ -1,32 +1,40 @@
 // admin.js
 
-function addEmployee() {
-    const id = document.getElementById("admin-id").value.trim();
-    const password = document.getElementById("admin-password").value.trim();
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form');
 
-    if (id === "" || password === "") {
-        alert("Proszę wypełnić oba pola ID i hasło.");
-        return;
-    }
+    window.addEmployee = async function(e) {
+        e.preventDefault();
 
-    // Przykład wysyłania danych do serwera
-    fetch('/api/addEmployee', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, password })
-    })
-    .then(response => {
-        if (response.ok) {
-            alert("Pracownik został dodany.");
-        } else {
-            alert("Wystąpił błąd podczas dodawania pracownika.");
+        const adminId = document.getElementById('admin-id').value;
+        const password = document.getElementById('admin-password').value;
+
+        try {
+            const response = await fetch('/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    admin_id: adminId,
+                    password: password
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Pracownik zarejestrowany');
+                form.reset();
+            } else {
+                alert(`Błąd: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('Błąd:', error);
+            alert('Błąd podczas rejestracji');
         }
-    })
-    .catch(error => {
-        console.error("Błąd:", error);
-        alert("Wystąpił błąd podczas dodawania pracownika.");
-    });
-}
+    };
+});
 
 function deleteEmployee() {
     const id = document.getElementById("admin-id").value.trim();

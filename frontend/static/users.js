@@ -2,7 +2,7 @@
 
 // Upewnienie się, że funkcja goBack jest w globalnym zasięgu
 window.goBack = function() {
-    window.location.href = 'admin.html';
+    window.location.href = 'admin';
 }
 
 document.addEventListener('DOMContentLoaded', loadUsers);
