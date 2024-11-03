@@ -25,43 +25,50 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (response.ok) {
                 alert('Pracownik zarejestrowany');
-                form.reset();
+                window.location.reload();
+            } else if (response.status === 409) {
+                alert(`${data.error}`);
             } else {
                 alert(`Błąd: ${data.error}`);
             }
         } catch (error) {
             console.error('Błąd:', error);
-            alert('Błąd podczas rejestracji');
+            alert(error);
         }
     };
-});
 
-function deleteEmployee() {
-    const id = document.getElementById("admin-id").value.trim();
+    window.removeEmployee = async function (e) {
+        e.preventDefault();
 
-    if (id === "") {
-        alert("Proszę wprowadzić ID pracownika do usunięcia.");
-        return;
-    }
+        const adminId = document.getElementById('admin-id').value;
+        const password = document.getElementById('admin-password').value;
 
-    // Przykład wysyłania danych do serwera
-    fetch('/api/deleteEmployee', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
-    })
-    .then(response => {
-        if (response.ok) {
-            alert("Pracownik został usunięty.");
-        } else {
-            alert("Wystąpił błąd podczas usuwania pracownika.");
+        try {
+            const response = await fetch('/remove', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    admin_id: adminId,
+                    password: password
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Pracownik wyrejestrowany');
+                window.location.reload();
+            } else {
+                alert(`Błąd: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('Błąd:', error);
+            alert('Błąd podczas usuwania z listy pracowników');
         }
-    })
-    .catch(error => {
-        console.error("Błąd:", error);
-        alert("Wystąpił błąd podczas usuwania pracownika.");
-    });
-}
+    };    
+});
 
 function generateReport() {
     fetch('/api/generateReport')
@@ -83,6 +90,5 @@ function generateReport() {
 }
 
 function viewUsers() {
-    // Przekierowanie do strony z listą użytkowników
-    window.location.href = 'users.html';
+    window.location.href = 'users';
 }

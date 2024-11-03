@@ -42,24 +42,24 @@ function loadUsers() {
         });
 }
 
-function deleteUser(id) {
-    if (confirm(`Czy na pewno chcesz usunąć użytkownika o ID: ${id}?`)) {
-        fetch('/api/deleteEmployee', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id })
-        })
-        .then(response => {
-            if (response.ok) {
-                alert("Pracownik został usunięty.");
-                loadUsers();
-            } else {
-                alert("Wystąpił błąd podczas usuwania pracownika.");
-            }
-        })
-        .catch(error => {
-            console.error("Błąd:", error);
-            alert("Wystąpił błąd podczas usuwania pracownika.");
-        });
-    }
-}
+// function deleteUser(id) {
+//     if (confirm(`Czy na pewno chcesz usunąć użytkownika o ID: ${id}?`)) {
+//         fetch('/api/deleteEmployee', {
+//             method: 'POST',
+//             headers: { 'Content-Type': 'application/json' },
+//             body: JSON.stringify({ id })
+//         })
+//         .then(response => {
+//             if (response.ok) {
+//                 alert("Pracownik został usunięty.");
+//                 loadUsers();
+//             } else {
+//                 alert("Wystąpił błąd podczas usuwania pracownika.");
+//             }
+//         })
+//         .catch(error => {
+//             console.error("Błąd:", error);
+//             alert("Wystąpił błąd podczas usuwania pracownika.");
+//         });
+//     }
+// }

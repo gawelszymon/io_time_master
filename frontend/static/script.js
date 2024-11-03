@@ -1,45 +1,54 @@
 // script.js
 
-async function login() {
-    // Pobieranie wartości ID, hasła i stanowiska
-    const id = document.getElementById("id").value.trim();
-    const password = document.getElementById("password").value.trim();
-    const position = document.getElementById("position").value;
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form');
 
-    // Sprawdzanie, czy pola są wypełnione
-    if (id === "" || password === "") {
-        alert("Proszę wypełnić pola ID i hasło.");
-        return;
-    }
+    window.login = async function (e) {
+        e.preventDefault();
 
-    // Sprawdzanie, czy stanowisko zostało wybrane
-    if (position === "Wybierz stanowisko" || !position) {
-        alert("Proszę wybrać stanowisko pracy.");
-        return;
-    }
+        const id = document.getElementById('id');
+        const password = document.getElementById('password');
+        const position = document.getElementById('position');
 
-    // Sprawdzanie, czy zalogowano jako admin czy pracownik
-    if (id === "admin" && password === "admin123") {
-        // Przechowaj ID użytkownika w localStorage
-        localStorage.setItem("userId", id);
-        // Przekierowanie do panelu administratora
-        window.location.href = "admin.html";
-    } else if (id === "user" && password === "user123") { // Przykładowy pracownik
-        // Przechowaj ID użytkownika i stanowisko w localStorage
-        localStorage.setItem("userId", id);
-        localStorage.setItem("position", position);
+        if (!id.value || !password.value || !position.value) {
+            alter('Proszę wypełnić wszystkie pola!');
+            return;
+        }
 
-        // Wykonaj zdjęcie przy logowaniu
-        await captureLoginPhoto();
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: id.value,
+                    password: password.value,
+                    position: position.value
+                })
+            });
 
-        // Przekierowanie do panelu pracownika
-        window.location.href = "user.html";
-    } else {
-        // Komunikat o błędzie przy niepoprawnych danych logowania
-        alert("Nieprawidłowe ID lub hasło. Spróbuj ponownie.");
-    }
-}
+            const data = await response.json();
 
+            if (response.status === 401) {
+                alert(`${data.error}`);
+            } else if (!response.ok) {
+                throw new Error(data.error || "wystąpił błąd podczas logowania");
+            } else {
+                window.location.href = data.redirect_url;
+            }
+
+        } catch (error){
+            alert(error.message);
+            console.error(error);
+        }
+    };
+});
+
+
+
+
+        
 // Funkcja wykonująca zdjęcie przy logowaniu
 async function captureLoginPhoto() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
