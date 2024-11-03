@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, abort, render_template
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash
@@ -9,7 +9,7 @@ import psycopg2
 app = Flask(__name__, template_folder="../frontend/templates", static_folder='../frontend/static')
 CORS(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost:5432/employee'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:WBCfFxmRdkdUSCKkGJlxcxlZarlNxnbO@autorack.proxy.rlwy.net:38741/railway'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -35,9 +35,13 @@ def index():
 def admin():
     return render_template('admin.html')
 
-@app.route('/user')
-def user():
-    return render_template('user.html')
+@app.route('/user/<int:id>')
+def user(id):
+    user = Users.query.get(id)
+    if not user:
+        abort(404, description='user not found')
+    
+    return render_template('user.html', user=user)
 
 @app.route('/users')
 def users():
@@ -116,7 +120,48 @@ def login():
     db.session.commit()
     
     return jsonify({'message': 'zalogowano pomyślnie', 
-                    'redirect_url': '/user'}), 200
+                    'redirect_url': f'/user/{id}'}), 200
+    
+@app.route('/users_table', methods=['GET'])
+def get_users():
+    try:
+        users = Users.query.all()
+        users_table = [{
+            'id': user.id,
+            'position': user.position,
+            'action': user.action,
+        }for user in users]
+        return jsonify({'users': users_table})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+@app.route('/user/<int:id>/action_start', methods=['PUT'])
+def update_user_action_start(id):
+    user = Users.query.get(id)
+    
+    if not user:
+        return jsonify({'error': 'brak takiego uzytkownika'}), 404
+    
+    user.action = "w trakcie pracy"
+    db.session.commit()
+    
+    return jsonify({'message': 'status action zaktualizowany'}), 200
+
+@app.route('/user/<int:id>/action_end', methods=['PUT'])
+def update_user_action_end(id):
+    user = Users.query.get(id)
+    
+    data = request.get_json()
+    action_value = data.get('action')
+    
+    if not action_value:
+        return jsonify({'error': 'brak wartosci action'}), 400
+    
+    user.action = action_value
+    db.session.commit()
+    
+    return jsonify({'message': 'status action zaktualizowany'}), 200
+    
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=5005, debug=True)

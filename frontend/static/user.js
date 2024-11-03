@@ -1,8 +1,52 @@
-// user.js
+async function timeStart() {
 
-// Pobierz ID użytkownika i stanowisko z localStorage
-const userId = localStorage.getItem("userId");
-const position = localStorage.getItem("position");
+    const userId = window.location.pathname.split('/').pop();
+    console.log(userId);
+    
+    try {
+        const response = await fetch(`/user/${userId}/action_start`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Nie udało się zaktualizować statusu użytkownika');
+        }
+
+        const data = await response.json();
+        console.log(data.message);
+    } catch (error) {
+        console.error('Błąd:', error);
+    }
+}
+
+async function timeEnd() {
+
+    const userId = window.location.pathname.split('/').pop();
+    console.log(userId);
+
+    const timerValue = document.getElementById('timer').textContent;
+
+    try {
+        const response = await fetch(`/user/${userId}/action_end`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({action: timerValue})
+        });
+        if (!response.ok) {
+            throw new Error('Nie udało się zaktualizować statusu użytkownika');
+        }
+
+        const data = await response.json();
+        console.log(data.message);
+    } catch (error) {
+        console.error('Błąd:', error);
+    }
+}
+
 
 // Obsługa kamery
 let cameraStream = null;
