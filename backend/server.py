@@ -8,6 +8,7 @@ import psycopg2
 from openpyxl import Workbook
 from io import BytesIO
 import json
+import requests 
 app = Flask(__name__, template_folder="../frontend/templates", static_folder='../frontend/static')
 CORS(app)
 
@@ -137,6 +138,23 @@ def get_users():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     
+
+def get_users_to_download():
+    response = requests.get("http://127.0.0.1:5005/users_table")  # Adres z JSONem
+
+    # Sprawdzamy status odpowiedzi
+    if response.status_code == 200:
+        # Zakładamy, że odpowiedź jest już JSON-em i próbujemy go odczytać
+        data = response.json()
+
+        # Sprawdź, czy dane są słownikiem i zawierają klucz "users"
+        if isinstance(data, dict) and "users" in data:
+            return data["users"]  # Zwraca listę użytkowników
+        else:
+            raise ValueError("Błędny format danych: oczekiwano słownika z kluczem 'users'.")
+    else:
+        raise Exception("Błąd pobierania danych z API")
+    
 @app.route('/user/<int:id>/action_start', methods=['PUT'])
 def update_user_action_start(id):
     user = Users.query.get(id)
@@ -163,7 +181,7 @@ def update_user_action_end(id):
     db.session.commit()
     
     return jsonify({'message': 'status action zaktualizowany'}), 200
-
+"""
 class ActionLog(db.Model):
     __tablename__ = 'action_log'  # Define the table name
 
@@ -173,7 +191,7 @@ class ActionLog(db.Model):
 
     def __repr__(self):
         return f"<ActionLog id={self.id} position={self.position} action={self.action}>"
-
+"""
 
 def get_data_from_database():
     try:
@@ -195,12 +213,12 @@ def get_data_from_database():
 def create_excel(data):
     workbook = Workbook()
     sheet = workbook.active
-    sheet.append(["ID", "Position", "Action"])  # Adjust headers as needed
+    sheet.append(["ID", "Position", "Action"])  # Nagłówki kolumn
 
-    for row in data:
-        sheet.append(row)
+    for user in data:
+        sheet.append([user["id"], user["position"], user["action"]])
 
-    # Save to a bytes buffer
+    # Zapisz do bufora
     excel_file = BytesIO()
     workbook.save(excel_file)
     excel_file.seek(0)
@@ -209,13 +227,17 @@ def create_excel(data):
 @app.route('/api/generateReport', methods=['GET'])
 def download_data():
     try:
-        # Retrieve data from the database or JSON file
-        data = get_data_from_database()
+        # Pobierz dane z get_users()
+        data = get_users_to_download()
 
-        # Generate Excel file
+        # Sprawdź, czy data jest listą
+        if not isinstance(data, list):
+            return jsonify({"error": "Data format error: expected a list"}), 500
+
+        # Generowanie pliku Excel
         excel_file = create_excel(data)
 
-        # Send the file as an attachment for download
+        # Wysyłanie pliku do pobrania
         return send_file(
             excel_file,
             as_attachment=True,
@@ -224,5 +246,8 @@ def download_data():
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=5005, debug=True)
