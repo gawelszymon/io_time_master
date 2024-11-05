@@ -1,11 +1,13 @@
-from flask import Flask, abort, render_template
+from flask import Flask, abort, render_template,send_file
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash
 from flask import request, jsonify
 from sqlalchemy.exc import IntegrityError
 import psycopg2
-
+from openpyxl import Workbook
+from io import BytesIO
+import json
 app = Flask(__name__, template_folder="../frontend/templates", static_folder='../frontend/static')
 CORS(app)
 
@@ -161,7 +163,66 @@ def update_user_action_end(id):
     db.session.commit()
     
     return jsonify({'message': 'status action zaktualizowany'}), 200
-    
 
+class ActionLog(db.Model):
+    __tablename__ = 'action_log'  # Define the table name
+
+    id = db.Column(db.Integer, primary_key=True)
+    position = db.Column(db.String(80), nullable=False)
+    action = db.Column(db.String(80), nullable=False)
+
+    def __repr__(self):
+        return f"<ActionLog id={self.id} position={self.position} action={self.action}>"
+
+
+def get_data_from_database():
+    try:
+        # Open and read the JSON file
+        with open("data.json", "r") as file:
+            data = json.load(file)
+        
+        # Extract the required fields and format them as a list of tuples
+        result = [(entry["id"], entry["position"], entry["action"]) for entry in data]
+        
+        return result
+    except Exception as e:
+        print(f"Error reading from JSON file: {e}")
+        return []
+
+
+
+
+def create_excel(data):
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.append(["ID", "Position", "Action"])  # Adjust headers as needed
+
+    for row in data:
+        sheet.append(row)
+
+    # Save to a bytes buffer
+    excel_file = BytesIO()
+    workbook.save(excel_file)
+    excel_file.seek(0)
+    return excel_file
+
+@app.route('/api/generateReport', methods=['GET'])
+def download_data():
+    try:
+        # Retrieve data from the database or JSON file
+        data = get_data_from_database()
+
+        # Generate Excel file
+        excel_file = create_excel(data)
+
+        # Send the file as an attachment for download
+        return send_file(
+            excel_file,
+            as_attachment=True,
+            download_name="database_data.xlsx",
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=5005, debug=True)
