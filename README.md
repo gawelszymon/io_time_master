@@ -8,3 +8,4 @@ Instruction:
 - create venv
 - install: pip install -r requirements.txt
 - run: /backend/server
+- to reach the admin panel you should run '/admin' endpoint
